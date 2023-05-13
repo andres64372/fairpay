@@ -3,11 +3,13 @@ import { StyleSheet, SafeAreaView, Text, View, ScrollView } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { AntDesign } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons'; 
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery } from '@apollo/client';
 
 import {orders_query} from './graphql'
+import Filter from './filter'
 import Order from './order'
 import Error from '../assets/error'
 import Loading from '../assets/loading';
@@ -24,6 +26,8 @@ Date.prototype.addDays = function(days) {
 export default function Orders() {
     const [errorVisible, setErrorVisible] = useState(false);
     const [newOrder, setNewOrder] = useState(false);
+    const [filterOption, setFilterOption] = useState(false);
+    const [filter, setFilter] = useState([true, false]);
     const [date, setDate] = useState(new Date(
         today.getFullYear(),
         today.getMonth(),
@@ -67,6 +71,11 @@ export default function Orders() {
                 setVisible={setErrorVisible}
             />
             <Loading visible={loading} />
+            <Filter 
+                visible={filterOption}
+                setVisible={setFilterOption}
+                setFilter={setFilter} 
+            />
             <View style={styles.header}>
                 <View style={styles.name_field}>
                     <View style={styles.add_field}>
@@ -83,6 +92,13 @@ export default function Orders() {
                             color="black"
                             style={{ width: 40 }}
                             onPress={() => setNewOrder(true)}
+                        />
+                        <Ionicons 
+                            name="filter-outline" 
+                            size={32} 
+                            color="black"
+                            style={{ width: 40 }}
+                            onPress={() => setFilterOption(true)} 
                         />
                     </View>
                     <Text>
@@ -101,7 +117,7 @@ export default function Orders() {
                 
             </View>
             <ScrollView>
-                {data && data.allOrders.edges.map((order, index) => {
+                {data && data.allOrders.edges.filter(order => filter.includes(order.node.closed)).map((order, index) => {
                     const total = order.node.clientSet.edges.reduce((accumulator, object) => {
                         return accumulator + object.node.amount;
                     }, 0) * (order.node.tip + 100) / 100;
