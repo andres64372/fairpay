@@ -18,6 +18,7 @@ import Checkbox from 'expo-checkbox';
 import { useEffect, useState } from 'react';
 import { Payment as PaymentType } from '../../redux/accounts';
 import { Theme, themes } from '../../redux/theme';
+import { editAccount } from '../../redux/accounts';
 
 function PaymentInput() {
     const payment = useSelector((state: RootState) => state.paymentState);
@@ -59,36 +60,38 @@ function PaymentInput() {
         setAmount(e);
     }
 
-    const updateTax = (e: number) => {
-        const updatedPayment: PaymentType = {
+    const updateTax = (value: number) => {
+        dispatch(changeStatePayment({
             ...payment,
-            tax: e
-        };
-        dispatch(changeStatePayment(updatedPayment));
-        setTaxAmount(e);
+            tax: value
+        }));
+        setTaxAmount(value);
     }
 
-    const equalAccounts = () => {
-        if(!payment.equalAccounts){
+    const equalAccounts = (value: boolean) => {
+        value ?
             dispatch(changeStatePayment({
-                ...payment, equalAccounts: !payment.equalAccounts, amounts: payment.amounts.map(item => (
-                    {...item, amount: amount / account.users.length}
+                ...payment, equalAccounts: true, amounts: payment.amounts.map(item => (
+                    {
+                        ...item, 
+                        equalAccounts: true, amount: amount / account.users.length
+                    }
                 ))
-            }));
-        }else{
+            }))
+        :
             dispatch(changeStatePayment({
-                ...payment, equalAccounts: !payment.equalAccounts
-            }));
-        }
+                ...payment, equalAccounts: false, amounts: payment.amounts.map(item => (
+                    {...item, equalAccounts: false}
+                ))
+            }))
     }
     
     const setUser = (value: any) => {
         const item: string = value()
-        const updatedPayment: PaymentType = {
+        dispatch(changeStatePayment({
             ...payment,
             userId: item
-        };
-        dispatch(changeStatePayment(updatedPayment));
+        }));
         setValue(item)
     }
 
@@ -109,7 +112,10 @@ function PaymentInput() {
                         <Text style={styles.label}>Total</Text>
                         <CurrencyInput 
                             style={[styles.currency_input, {
-                                color: payment.equalAccounts ? theme.text : theme.secondary
+                                color: payment.equalAccounts ? 
+                                    theme.text 
+                                : 
+                                    theme.secondary
                             }]}
                             value={amount}
                             prefix="$ "
@@ -154,7 +160,6 @@ function PaymentInput() {
                     <Checkbox 
                         value={payment.equalAccounts} 
                         onValueChange={equalAccounts}
-                        color={theme.secondary}
                     />
                 </View>
             </View>
@@ -195,9 +200,10 @@ type UserInputProps = {
     id: string
     name: string
     amount: number
+    equalAccounts: boolean
 }
 
-function UserInput({id, name, amount}: UserInputProps) {
+function UserInput({id, name, amount, equalAccounts}: UserInputProps) {
     const payment = useSelector((state: RootState) => state.paymentState);
     const dispatch = useDispatch();
     const [text, setText] = useState<number>(amount);
@@ -205,24 +211,50 @@ function UserInput({id, name, amount}: UserInputProps) {
     const styles = style(theme);
     const userInputStyles = userInputStyle(theme);
 
+    const total = payment.amounts.reduce(
+        (accumulator, currentValue) => accumulator + Number(currentValue.amount), 0
+    );
+
     useEffect(() => {
-        if(payment.equalAccounts){
-            setText(amount);
-        }
+        payment.equalAccounts && setText(amount);
     }, [amount])
 
     const updateAmmount = (e: number) => {
-        const updatedPayment: PaymentType = {
+        dispatch(changeStatePayment({
             ...payment,
-            amounts: payment.amounts.map(item => {
-                if(item.userId === id){
-                    return {...item, amount: e}
-                }
-                return item
-            })
-        }
-        dispatch(changeStatePayment(updatedPayment));
+            amounts: payment.amounts.map(item => (
+                item.userId === id ? {...item, amount: e} : item
+            ))
+        }));
         setText(e);
+    }
+
+    const setEqualAccounts = (value: boolean) => {
+        const users = value ? 
+        payment.amounts.filter(item => item.equalAccounts).length + 1
+        :
+        payment.amounts.filter(item => item.equalAccounts).length - 1;
+        
+        value ?
+            dispatch(changeStatePayment({
+                ...payment, amounts: payment.amounts
+                .map(item => (
+                    item.userId === id ? 
+                        {...item, equalAccounts: true, amount: total / users} 
+                    : 
+                        {...item, amount: total / users} 
+                ))
+            }))
+        :
+            dispatch(changeStatePayment({
+                ...payment, amounts: payment.amounts
+                .map(item => (
+                    item.userId === id ? 
+                        {...item, equalAccounts: false, amount: 0} 
+                    : 
+                        {...item, amount: total / users}
+                ))
+            }));
     }
 
     return (
@@ -230,6 +262,14 @@ function UserInput({id, name, amount}: UserInputProps) {
             <View style={userInputStyles.name}>
                 <Text style={styles.label}>{name}</Text>
             </View>
+            {payment.equalAccounts &&
+            <View style={userInputStyles.checkbox}>
+                <Checkbox
+                    value={equalAccounts}
+                    onValueChange={setEqualAccounts}
+                />
+            </View>
+            }
             <View style={userInputStyles.input}>
                 <CurrencyInput
                     style={[styles.input, {
@@ -260,6 +300,10 @@ const userInputStyle = (_: Theme) => StyleSheet.create({
     input: {
         flex: 1
     },
+    checkbox: {
+        justifyContent: 'center',
+        marginHorizontal: 10,
+    },
     delete: {
         marginLeft: 10,
         justifyContent: 'center'
@@ -275,22 +319,30 @@ export default function Payment() {
     const dispatch = useDispatch();
 
     const savePayment = () => {
-        if(account.payments.some(item => item.id === payment.id)){
+        account.payments.some(item => item.id === payment.id) ?
             dispatch(changeStateAccount({
                 ...account,
-                payments: account.payments.map(item => {
-                    if(item.id === payment.id){
-                        return payment
-                    }
-                    return item
-                })
-            }));
-        }else{
+                payments: account.payments.map(item => (
+                    item.id === payment.id ? payment : item
+                ))
+            }))
+        :
             dispatch(changeStateAccount({
                 ...account,
                 payments: [...account.payments, payment]
             }));
-        }
+        account.payments.some(item => item.id === payment.id) ?
+            dispatch(editAccount({
+                ...account,
+                payments: account.payments.map(item => (
+                    item.id === payment.id ? payment : item
+                ))
+            }))
+        :
+            dispatch(editAccount({
+                ...account,
+                payments: [...account.payments, payment]
+            }));
         dispatch(setPaymentVisible(false));
     } 
 
@@ -303,7 +355,10 @@ export default function Payment() {
             <View style={styles.container}>
                 <View style={styles.box}>
                     <View style={styles.header}>
-                        <View style={styles.close} onTouchEnd={() => dispatch(setPaymentVisible(false))}>
+                        <View 
+                            style={styles.close} 
+                            onTouchEnd={() => dispatch(setPaymentVisible(false))}
+                        >
                             <AntDesign 
                                 name='close' 
                                 size={30} 
@@ -328,7 +383,16 @@ export default function Payment() {
                                     key={item.id} 
                                     id={item.id}
                                     name={item.name}
-                                    amount={payment.amounts.filter(amount => amount.userId === item.id)[0]?.amount} 
+                                    amount={
+                                        payment.amounts.filter(
+                                            amount => amount.userId === item.id
+                                        )[0]?.amount
+                                    }
+                                    equalAccounts={
+                                        payment.amounts.filter(
+                                            amount => amount.userId === item.id
+                                        )[0]?.equalAccounts
+                                    }  
                                 />
                             ))}
                         </View>

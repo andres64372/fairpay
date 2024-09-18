@@ -4,13 +4,13 @@ type PaymentModal = {
     visible: boolean,
 }
 
-const initialState = {
+const initialModal = {
     visible: false
 }
 
 const paymentModalSlice = createSlice({
     name: "paymentModal",
-    initialState: initialState,
+    initialState: initialModal,
     reducers: {
         setPaymentVisible: (state: PaymentModal, action: {payload: boolean, type: string}) => {
             state.visible = action.payload

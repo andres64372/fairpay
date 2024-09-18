@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { Payment } from "./accounts";
 
 
-const initialAccount: Payment = {
+const initialPayment: Payment = {
     id: "",
     userId: "",
     description: "",
@@ -13,7 +13,7 @@ const initialAccount: Payment = {
 
 const paymentSlice = createSlice({
     name: "payment",
-    initialState: initialAccount,
+    initialState: initialPayment,
     reducers: {
         changeStatePayment: (state: Payment, action: {payload: Payment, type: string}) => {
             state.id = action.payload.id
