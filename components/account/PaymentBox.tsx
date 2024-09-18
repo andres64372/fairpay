@@ -1,11 +1,12 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { StyleSheet, Text, View, Alert } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import { RootState } from '../../redux/store';
 import { setPaymentVisible } from '../../redux/paymentModal';
 import { changeStatePayment } from '../../redux/payment';
 import { changeStateAccount } from '../../redux/account';
 import { Theme, themes } from '../../redux/theme';
+import { editAccount } from '../../redux/accounts';
 
 interface Props {
     id: string
@@ -13,7 +14,9 @@ interface Props {
     amount: number
 }
 
-const format = new Intl.NumberFormat('es', {style: 'decimal'});
+const format = new Intl.NumberFormat(
+    'es', {style: 'decimal', maximumFractionDigits: 2}
+);
 
 export default function PaymentBox({id, name, amount}: Props) {
     const dispatch = useDispatch();
@@ -24,23 +27,21 @@ export default function PaymentBox({id, name, amount}: Props) {
     const styles = style(theme);
 
     const handleEdit = () => {
-        dispatch(changeStatePayment(account.payments.filter(item => item.id === id)[0]));
-        dispatch(setPaymentVisible(true))
+        dispatch(changeStatePayment(
+            account.payments.filter(item => item.id === id)[0]
+        ));
+        dispatch(setPaymentVisible(true));
     }
 
     const handleDelete = () => {
-        Alert.alert('Estas seguro de borrar este elemento?', 'Esta acción no se puede deshacer', [{
-            text: 'No',
-            style: 'cancel',
-        },{
-            text: 'Si', 
-            onPress: () => {
-                dispatch(changeStateAccount({
-                    ...account,
-                    payments: account.payments.filter(item => item.id !== id)
-                }));
-            }
-        }]);
+        dispatch(changeStateAccount({
+            ...account,
+            payments: account.payments.filter(item => item.id !== id)
+        }));
+        dispatch(editAccount({
+            ...account,
+            payments: account.payments.filter(item => item.id !== id)
+        }));
     }
 
     return (

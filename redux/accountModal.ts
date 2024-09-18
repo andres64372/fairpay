@@ -4,13 +4,13 @@ type AccountModal = {
     visible: boolean,
 }
 
-const initialState = {
+const initialModal = {
     visible: false
 }
 
 const accountModalSlice = createSlice({
     name: "accountModal",
-    initialState: initialState,
+    initialState: initialModal,
     reducers: {
         setAccountVisible: (state: AccountModal, action: {payload: boolean, type: string}) => {
             state.visible = action.payload

@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
 import { setAccountVisible } from '../../redux/accountModal';
 import { changeStateAccount } from '../../redux/account';
-import { Account as AccountType, addAccount } from '../../redux/accounts';
+import { addAccount } from '../../redux/accounts';
 import { randomUUID } from 'expo-crypto';
 import { 
     StyleSheet, 
@@ -29,13 +29,12 @@ function AccountInput({name}: AccountInputProps) {
     const accountInputStyles = accountInputStyle(theme);
     const [text, setText] = useState<string>(name);
 
-    const updateName = (e: string) => {
-        const updatedAccount = {
+    const updateName = (value: string) => {
+        dispatch(changeStateAccount({
             ...account,
-            name: e
-        };
-        dispatch(changeStateAccount(updatedAccount));
-        setText(e);
+            name: value
+        }));
+        setText(value);
     }
 
     return (
@@ -51,7 +50,7 @@ function AccountInput({name}: AccountInputProps) {
     )
 }
 
-const accountInputStyle = (theme: Theme) => StyleSheet.create({
+const accountInputStyle = (_: Theme) => StyleSheet.create({
     container: {
         paddingVertical: 5,
         paddingHorizontal: 10,
@@ -75,27 +74,25 @@ function UserInput({id, name, enabled}: UserInputProps) {
     const [text, setText] = useState<string>(name);
 
     const deleteUser = () => {
-        if(account.users.length > 1){
-            const updatedAccount = {
-                ...account,
-                users: account.users.filter(user => user.id !== id)
-            };
-            dispatch(changeStateAccount(updatedAccount));
-        }
+        account.users.length > 1 && dispatch(changeStateAccount({
+            ...account,
+            users: account.users.filter(user => user.id !== id),
+            payments: account.payments.map(
+                payment => ({...payment, amounts: payment.amounts.filter(
+                    amount => amount.userId !== id
+                )})
+            )
+        }));
     }
 
-    const updateName = (e: string) => {
-        const updatedAccount = {
+    const updateName = (value: string) => {
+        dispatch(changeStateAccount({
             ...account,
-            users: account.users.map(user => {
-                if(user.id === id){
-                    return {...user, name: e}
-                }
-                return user
-            })
-        };
-        dispatch(changeStateAccount(updatedAccount));
-        setText(e);
+            users: account.users.map(user => (
+                user.id === id ? {...user, name: value} : user
+            ))
+        }));
+        setText(value);
     }
 
     return (
@@ -109,11 +106,9 @@ function UserInput({id, name, enabled}: UserInputProps) {
                     onChangeText={updateName}
                 />
             </View>
-            {enabled && 
             <View style={userInputStyles.delete}>
                 <Feather name='trash' size={24} color='red' onPress={deleteUser}/>
             </View>
-            }
         </View>
     )
 }
@@ -143,15 +138,19 @@ export default function Account() {
     const styles = style(theme);
 
     const addUser = () => {
-        const id: string = randomUUID();
-        const updatedAccount: AccountType = {
+        const id = randomUUID();
+        dispatch(changeStateAccount({
             ...account,
             users: [...account.users, {
                 id: id,
                 name: `Integrante ${account.users.length + 1}`
-            }]
-        };
-        dispatch(changeStateAccount(updatedAccount));
+            }],
+            payments: account.payments.map(
+                payment => ({...payment, amounts: [...payment.amounts, {
+                    userId: id, amount: 0, equalAccounts: false
+                }]})
+            )
+        }));
     }
 
     const saveAccount = () => {
@@ -168,7 +167,10 @@ export default function Account() {
             <View style={styles.container}>
                 <View style={styles.box}>
                     <View style={styles.header}>
-                        <View style={styles.close} onTouchEnd={() => dispatch(setAccountVisible(false))}>
+                        <View 
+                            style={styles.close} 
+                            onTouchEnd={() => dispatch(setAccountVisible(false))}
+                        >
                             <AntDesign 
                                 name='close' 
                                 size={30} 
@@ -196,7 +198,6 @@ export default function Account() {
                                     enabled={account.payments.length === 0}
                                 />
                             ))}
-                            {account.payments.length === 0 &&
                             <AntDesign
                                 style={styles.add_items} 
                                 name="pluscircleo" 
@@ -204,7 +205,6 @@ export default function Account() {
                                 color={theme.secondary}
                                 onPress={addUser}
                             />
-                            }
                         </View>
                     </ScrollView>
                 </View>

@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { StyleSheet, Text, View, Alert } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { deleteAccount } from '../../redux/accounts';
 import { RootState } from '../../redux/store';
 import { setAccountVisible } from '../../redux/accountModal';
@@ -14,7 +15,9 @@ interface Props {
     amount: number
 }
 
-const format = new Intl.NumberFormat('es', {style: 'decimal'});
+const format = new Intl.NumberFormat(
+    'es', {style: 'decimal', maximumFractionDigits: 2}
+);
 
 export default function AccountBox({id, name, amount}: Props) {
     const dispatch = useDispatch();
@@ -28,21 +31,40 @@ export default function AccountBox({id, name, amount}: Props) {
     }
 
     const handleDelete = () => {
-        
-        Alert.alert('Estas seguro de borrar este elemento?', 'Esta acción no se puede deshacer', [{
-            text: 'No',
-            style: 'cancel',
-        },{
-            text: 'Si', 
-            onPress: () => {
-                dispatch(deleteAccount(id));
-            }
-        }]);
+        Alert.alert(
+            'Estas seguro de borrar este elemento?', 
+            'Esta acción no se puede deshacer', [{
+                text: 'No',
+                style: 'cancel',
+            },{
+                text: 'Si', 
+                onPress: () => {
+                    dispatch(deleteAccount(id));
+                }
+            }]
+        );
+    }
+
+    const handleAccount = (id: string) => {
+        dispatch(changeStateAccount(
+            accounts.filter(item => item.id === id)[0]
+        ))
+        router.navigate(`/accounts/account`)
     }
 
     return (
         <View style={styles.container}>
-            <View style={styles.info} onTouchEnd={() => {router.navigate(`/account/${id}`)}}>
+            <View 
+                style={styles.navigate}
+                onTouchEnd={() => {handleAccount(id)}}    
+            >
+                <AntDesign 
+                    name="right" 
+                    size={24} 
+                    color={theme.third}
+                />
+            </View>
+            <View style={styles.info}>
                 <Text style={styles.info_name}>{name}</Text>
                 <Text style={styles.info_amount}>$ {format.format(amount)}</Text>
             </View>
@@ -78,7 +100,6 @@ const style = (theme: Theme) => StyleSheet.create({
     info: {
         alignItems: 'flex-start',
         flex: 1,
-        paddingHorizontal: 20,
         paddingVertical: 10,
     },
     info_name: {
@@ -98,6 +119,9 @@ const style = (theme: Theme) => StyleSheet.create({
         paddingHorizontal: 10,
     },
     delete: {
+        paddingHorizontal: 10,
+    },
+    navigate: {
         paddingHorizontal: 10,
     }
 });

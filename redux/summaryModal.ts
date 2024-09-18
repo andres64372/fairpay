@@ -4,13 +4,13 @@ type SummaryModal = {
     visible: boolean,
 }
 
-const initialState = {
+const initialSummary = {
     visible: false
 }
 
 const summaryModalSlice = createSlice({
     name: "summaryModal",
-    initialState: initialState,
+    initialState: initialSummary,
     reducers: {
         setSummaryVisible: (state: SummaryModal, action: {payload: boolean, type: string}) => {
             state.visible = action.payload

@@ -41,7 +41,9 @@ function App() {
 
     const getTotal = (payments: Payment[]) => {
         return payments.map(
-            payment => payment.amounts.map(item => item.amount * (1 + payment.tax / 100))
+            payment => payment.amounts.map(
+                item => item.amount * (1 + payment.tax / 100)
+            )
         )
         .flat()
         .reduce((accumulator, currentValue) => accumulator + currentValue, 0);

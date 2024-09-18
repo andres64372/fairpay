@@ -11,8 +11,10 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import { setSummaryVisible } from '../../redux/summaryModal';
 import { Theme, themes } from '../../redux/theme';
 
-const dots = '...........................................................................................................................................';
-const format = new Intl.NumberFormat('es', {style: 'decimal'});
+const dots = '............................................';
+const format = new Intl.NumberFormat(
+    'es', {style: 'decimal', maximumFractionDigits: 2}
+);
 
 type ItemProps = {
     name: string,
@@ -31,9 +33,13 @@ function Item({name, amount}: ItemProps){
                 </View>
                 <View>
                     {amount >= 0 ?
-                    <Text style={styles.item_positive}>$ {format.format(amount)}</Text>
+                        <Text style={styles.item_positive}>
+                            $ {format.format(amount)}
+                        </Text>
                     :
-                    <Text style={styles.item_negative}>$ {format.format(amount)}</Text>
+                        <Text style={styles.item_negative}>
+                            $ {format.format(amount)}
+                        </Text>
                     }
                 </View>
             </View>
@@ -91,7 +97,9 @@ export default function Summary() {
 
     const getTotal = () => {
         return account.payments.map(
-            payment => payment.amounts.map(item => item.amount * (1 + payment.tax / 100))
+            payment => payment.amounts.map(
+                item => item.amount * (1 + payment.tax / 100)
+            )
         )
         .flat()
         .reduce((accumulator, currentValue) => accumulator + currentValue, 0);
@@ -106,7 +114,10 @@ export default function Summary() {
             <View style={styles.container}>
                 <View style={styles.box}>
                     <View style={styles.header}>
-                        <View style={styles.close} onTouchEnd={() => dispatch(setSummaryVisible(false))}>
+                        <View 
+                            style={styles.close} 
+                            onTouchEnd={() => dispatch(setSummaryVisible(false))}
+                        >
                             <AntDesign 
                                 name='close' 
                                 size={30} 
@@ -119,7 +130,9 @@ export default function Summary() {
                             <Item 
                                 key={item.id} 
                                 name={item.name}
-                                amount={getUserTotalPay(item.id) - getUserTotalDue(item.id)}
+                                amount={
+                                    getUserTotalPay(item.id) - getUserTotalDue(item.id)
+                                }
                             />
                         ))}
                     </ScrollView>
@@ -163,15 +176,15 @@ const style = (theme: Theme) => StyleSheet.create({
         flex: 1,
     },
     item: {
-        fontSize: 20,
+        fontSize: 18,
         color: theme.text
     },
     item_positive: {
-        fontSize: 20,
+        fontSize: 18,
         color: 'lime'
     },
     item_negative: {
-        fontSize: 20,
+        fontSize: 18,
         color: 'red'
     },
     total: {

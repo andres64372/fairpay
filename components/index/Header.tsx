@@ -7,7 +7,6 @@ import { setAccountVisible } from '../../redux/accountModal';
 import { changeStateAccount } from '../../redux/account';
 import { setTheme } from '../../redux/theme';
 import { randomUUID } from 'expo-crypto';
-import { Account } from '../../redux/accounts';
 import { Theme, themes } from '../../redux/theme';
 
 export default function Header(){
@@ -21,17 +20,15 @@ export default function Header(){
     }
 
     const handleAccount = () => {
-        const id: string = randomUUID();
-        const initialAccount: Account = {
+        dispatch(changeStateAccount({
             id: randomUUID(),
             name: "Cuenta",
             users: [{
-                id: id,
+                id: randomUUID(),
                 name: "Integrante 1"
             }],
             payments: []
-        }
-        dispatch(changeStateAccount(initialAccount));
+        }));
         dispatch(setAccountVisible(true))
     }
 
