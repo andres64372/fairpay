@@ -1,3 +1,4 @@
+import { Text } from 'react-native';
 import { router } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { StyleSheet, View } from 'react-native';
@@ -43,7 +44,9 @@ export default function Header(){
                     size={24} 
                     color={theme.third} 
                 />
+                
             </View>
+            <Text style={styles.title}>{account.name}</Text>
             <View style={styles.actions}>
                 {account.payments.length > 0 &&
                 <View style={styles.export} onTouchEnd={handleSummary}>
@@ -66,7 +69,7 @@ export default function Header(){
     )
 }
 
-const style = (_: Theme) => StyleSheet.create({
+const style = (theme: Theme) => StyleSheet.create({
     container: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -75,6 +78,7 @@ const style = (_: Theme) => StyleSheet.create({
         borderRadius: 20,
     },
     back: {
+        flexDirection: 'row',
         alignItems: 'flex-start',
         flex: 1,
         paddingHorizontal: 20,
@@ -101,5 +105,9 @@ const style = (_: Theme) => StyleSheet.create({
     },
     checkbox: {
         marginHorizontal: 20,
-    }
+    },
+    title: {
+        fontSize: 20,
+        color: theme.text
+    },
 });

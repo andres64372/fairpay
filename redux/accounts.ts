@@ -34,7 +34,7 @@ const storeData = async (value: Account[]) => {
     try {
         await AsyncStorage.setItem('data', JSON.stringify(value));
     } catch (e) {
-
+        alert(e)
     }
 };
 
