@@ -1,5 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, Text, SafeAreaView } from 'react-native';
+import { 
+    StyleSheet, 
+    View, 
+    Text, 
+    SafeAreaView, 
+    ScrollView 
+} from 'react-native';
 import { Provider, useSelector, useDispatch } from 'react-redux';
 import { store, RootState } from '../../redux/store';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -54,23 +60,25 @@ function App() {
             <Account/>
             <Header/>
             {accounts.length ?
-            accounts.map((item) => (
-                <AccountBox 
-                    key={item.id} 
-                    id={item.id} 
-                    name={item.name} 
-                    amount={item.payments ? getTotal(item.payments) : 0}
-                />
-            ))
+                <ScrollView>
+                    {accounts.map((item) => (
+                        <AccountBox 
+                            key={item.id} 
+                            id={item.id} 
+                            name={item.name} 
+                            amount={item.payments ? getTotal(item.payments) : 0}
+                        />
+                    ))}
+                </ScrollView>
             :
-            <View style={styles.empty}>
-                <MaterialCommunityIcons 
-                    name="cash-plus" 
-                    size={200} 
-                    color={theme.third} 
-                />
-                <Text style={styles.title}>Agrega tu primera cuenta</Text>
-            </View>
+                <View style={styles.empty}>
+                    <MaterialCommunityIcons 
+                        name="cash-plus" 
+                        size={200} 
+                        color={theme.third} 
+                    />
+                    <Text style={styles.title}>Agrega tu primera cuenta</Text>
+                </View>
             }
             <StatusBar backgroundColor={theme.background}/>
         </SafeAreaView>

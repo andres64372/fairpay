@@ -1,5 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, Text, SafeAreaView } from 'react-native';
+import { 
+    StyleSheet, 
+    View, 
+    Text, 
+    SafeAreaView, 
+    ScrollView 
+} from 'react-native';
 import { Provider, useSelector } from 'react-redux';
 import { store, RootState } from '../../redux/store';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -28,14 +34,16 @@ function App() {
             <Summary/>
             <Header/>
             {account.payments.length ?
-                account.payments.map(item => (
-                    <PaymentBox 
-                        key={item.id} 
-                        id={item.id} 
-                        name={item.description} 
-                        amount={item.amounts ? getTotal(item.amounts, item.tax) : 0}
-                    />
-                ))
+                <ScrollView>
+                    {account.payments.map(item => (
+                        <PaymentBox 
+                            key={item.id} 
+                            id={item.id} 
+                            name={item.description} 
+                            amount={item.amounts ? getTotal(item.amounts, item.tax) : 0}
+                        />
+                    ))}
+                </ScrollView>
             :
                 <View style={styles.empty}>
                     <MaterialCommunityIcons 
