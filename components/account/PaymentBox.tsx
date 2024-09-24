@@ -11,14 +11,15 @@ import { editAccount } from '../../redux/accounts';
 interface Props {
     id: string
     name: string
-    amount: number
+    amount: number,
+    date: string
 }
 
 const format = new Intl.NumberFormat(
     'es', {style: 'decimal', maximumFractionDigits: 2}
 );
 
-export default function PaymentBox({id, name, amount}: Props) {
+export default function PaymentBox({id, name, amount, date}: Props) {
     const dispatch = useDispatch();
     const account = useSelector((state: RootState) => state.accountState);
     const payment = account.payments.filter(item => item.id === id);
@@ -49,6 +50,13 @@ export default function PaymentBox({id, name, amount}: Props) {
             <View style={styles.info} onTouchEnd={() => {}}>
                 <Text style={styles.info_name}>{name}</Text>
                 <Text style={styles.info_amount}>{user}</Text>
+                <Text style={styles.info_amount}>
+                    {new Date(date).toLocaleDateString('es', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    })}
+                </Text>
                 <Text style={styles.info_amount}>$ {format.format(amount)}</Text>
             </View>
             <View style={styles.actions}>

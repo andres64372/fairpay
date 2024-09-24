@@ -8,7 +8,8 @@ const initialPayment: Payment = {
     description: "",
     amounts: [],
     equalAccounts: false,
-    tax: 0
+    tax: 0,
+    date: new Date(new Date().setHours(0, 0, 0, 0)).toISOString()
 }
 
 const paymentSlice = createSlice({
@@ -22,6 +23,7 @@ const paymentSlice = createSlice({
             state.amounts = action.payload.amounts
             state.equalAccounts = action.payload.equalAccounts
             state.tax = action.payload.tax
+            state.date = action.payload.date
         },
     },
 });

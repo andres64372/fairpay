@@ -31,7 +31,8 @@ export default function Header(){
                 {userId: item.id, amount: 0, equalAccounts: false}
             )),
             equalAccounts: false,
-            tax: 0
+            tax: 0,
+            date: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
         }));
         dispatch(setPaymentVisible(true))
     }

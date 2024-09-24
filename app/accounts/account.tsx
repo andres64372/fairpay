@@ -41,6 +41,7 @@ function App() {
                             id={item.id} 
                             name={item.description} 
                             amount={item.amounts ? getTotal(item.amounts, item.tax) : 0}
+                            date={item.date}
                         />
                     ))}
                 </ScrollView>

@@ -20,6 +20,7 @@ type Payment = {
     amounts: Array<UserPayment>
     equalAccounts: boolean
     tax: number
+    date: string
 }
 
 type UserPayment = {

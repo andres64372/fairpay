@@ -14,11 +14,12 @@ import {
 import CurrencyInput from 'react-native-currency-input';
 import DropDownPicker from 'react-native-dropdown-picker';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Checkbox from 'expo-checkbox';
 import { useEffect, useState } from 'react';
-import { Payment as PaymentType } from '../../redux/accounts';
 import { Theme, themes } from '../../redux/theme';
 import { editAccount } from '../../redux/accounts';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 function PaymentInput() {
     const payment = useSelector((state: RootState) => state.paymentState);
@@ -32,6 +33,7 @@ function PaymentInput() {
     const [amount, setAmount] = useState<number>(0);
     const [open, setOpen] = useState<boolean>(false);
     const [value, setValue] = useState<string>(payment.userId);
+    const [dateVisible, setDateVisible] = useState<boolean>(false);
 
     useEffect(() => {
         const total = payment.amounts.reduce(
@@ -41,22 +43,20 @@ function PaymentInput() {
     }, [payment])
 
     const updateName = (e: string) => {
-        const updatedPayment: PaymentType = {
+        dispatch(changeStatePayment({
             ...payment,
             description: e
-        };
-        dispatch(changeStatePayment(updatedPayment));
+        }));
         setText(e);
     }
 
     const updateAmount = (e: number) => {
-        const updatedPayment: PaymentType = {
+        dispatch(changeStatePayment({
             ...payment,
             amounts: payment.amounts.map(item => (
                 {...item, amount: e / account.users.length}
             ))
-        }
-        dispatch(changeStatePayment(updatedPayment));
+        }));
         setAmount(e);
     }
 
@@ -94,6 +94,14 @@ function PaymentInput() {
         }));
         setValue(item)
     }
+
+    const onDateChange = (_: DateTimePickerEvent, date: Date | undefined) => {
+        setDateVisible(false);
+        date && dispatch(changeStatePayment({
+            ...payment,
+            date: new Date(date.setHours(0, 0, 0, 0)).toISOString()
+        }));
+    };
 
     return (
         <View style={accountInputStyles.container}>
@@ -154,6 +162,22 @@ function PaymentInput() {
                             theme={theme.dropdownTheme}
                         />
                     </View>
+                    <View style={accountInputStyles.date} onTouchEnd={() => setDateVisible(true)}>
+                        <MaterialIcons name="date-range" size={30} color={theme.third}/>
+                        <Text style={styles.label}>
+                            {new Date(payment.date).toLocaleDateString('es-ES', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                            })}
+                        </Text>
+                        {dateVisible &&
+                            <DateTimePicker
+                                value={new Date(payment.date)}
+                                onChange={onDateChange}
+                            />
+                        }
+                    </View>
                 </View>
                 <View style={accountInputStyles.input_container}>
                     <Text style={styles.label}>Cuentas por igual</Text>
@@ -183,6 +207,11 @@ const accountInputStyle = (_: Theme) => StyleSheet.create({
         flex: 1,
         marginHorizontal: 5,
         justifyContent: 'center',
+    },
+    date: {
+        marginHorizontal: 5,
+        justifyContent: 'center',
+        alignItems: 'flex-end',
     },
     cash: {
         marginHorizontal: 5,
